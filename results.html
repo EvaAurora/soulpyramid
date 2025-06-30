@@ -50,6 +50,24 @@
   <div class="footer">Проєкт створено з любов’ю Тихою Тріадою 🕊️</div>
 
 <script>
+// 🔁 Нормалізація назв 6 карт
+function normalizeCardName(rawName) {
+  const map = {
+    "Дурак": "Дурень (0)",
+    "Дурень": "Дурень (0)",
+    "Император": "Імператор (IV)",
+    "Імператор": "Імператор (IV)",
+    "Императрица": "Імператриця (III)",
+    "Імператриця": "Імператриця (III)",
+    "Иерофант": "Ієрофант (V)",
+    "Ієрофант": "Ієрофант (V)",
+    "Маг": "Маг (I)",
+    "Верховная Жрица": "Верховна Жриця (II)",
+    "Верховна Жриця": "Верховна Жриця (II)"
+  };
+  return map[rawName] || rawName;
+}
+
 async function loadInterpretations() {
   try {
     const response = await fetch('cards_data.json');
@@ -58,9 +76,10 @@ async function loadInterpretations() {
     const cardsData = await response.json();
     const params = new URLSearchParams(window.location.search);
     const cardKeys = [];
-    for(let i=1; i<=6; i++) {
-      const cardName = params.get('card' + i) || 'пусто';
-      cardKeys.push(cardName);
+    for (let i = 1; i <= 6; i++) {
+      const rawCard = params.get('card' + i) || 'пусто';
+      const normalizedCard = normalizeCardName(rawCard);
+      cardKeys.push(normalizedCard);
     }
 
     const resultContainer = document.getElementById('resultContainer');
@@ -75,7 +94,7 @@ async function loadInterpretations() {
       "🔻 Підсвідомість (Нижній ярус – права)"
     ];
 
-    for(let i=0; i<cardKeys.length; i++) {
+    for (let i = 0; i < cardKeys.length; i++) {
       const cardName = cardKeys[i];
       if (cardName === 'пусто' || !(cardName in cardsData)) {
         resultContainer.innerHTML += `<div><em>Карта "${cardName}" не знайдена у базі даних.</em></div><hr>`;
@@ -95,7 +114,7 @@ async function loadInterpretations() {
       `;
     }
 
-    // 🔔 Надсилаємо повідомлення в Telegram
+    // Надсилаємо повідомлення в Telegram
     sendToTelegram(cardKeys);
 
   } catch (error) {
