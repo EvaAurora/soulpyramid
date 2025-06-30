@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Результат Піраміди Душі</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #111, #222);
+      color: #f3eac2;
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 32px;
+      color: #f3eac2;
+      margin-bottom: 30px;
+    }
+    .result-block {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      max-width: 800px;
+      margin: 0 auto 30px;
+      text-align: left;
+    }
+    .footer {
+      margin-top: 50px;
+      font-size: 14px;
+      color: #666;
+    }
+    .card-title {
+      font-size: 20px;
+      color: #ffe08a;
+      margin-top: 20px;
+    }
+    hr {
+      margin: 30px 0;
+      border: none;
+      border-top: 1px dashed #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔮 Твоя Піраміда Душі</h1>
+  <div id="resultContainer" class="result-block"></div>
+  <div class="footer">Проєкт створено з любов’ю Тихою Тріадою 🕊️</div>
+
+<script>
+async function loadInterpretations() {
+  try {
+    const response = await fetch('cards_data.json');
+    if (!response.ok) throw new Error('Не вдалося завантажити файл з інтерпретаціями.');
+
+    const cardsData = await response.json();
+    const params = new URLSearchParams(window.location.search);
+    const cardKeys = [];
+    for(let i=1; i<=6; i++) {
+      const cardName = params.get('card' + i) || 'пусто';
+      cardKeys.push(cardName);
+    }
+
+    const resultContainer = document.getElementById('resultContainer');
+    resultContainer.innerHTML = '';
+
+    const titles = [
+      "🔺 Его (Верхній ярус)",
+      "🔸 Свідомість (Середній ярус – ліва)",
+      "🔸 Свідомість (Середній ярус – права)",
+      "🔻 Підсвідомість (Нижній ярус – ліва)",
+      "🔻 Підсвідомість (Нижній ярус – середина)",
+      "🔻 Підсвідомість (Нижній ярус – права)"
+    ];
+
+    for(let i=0; i<cardKeys.length; i++) {
+      const cardName = cardKeys[i];
+      if (cardName === 'пусто' || !(cardName in cardsData)) {
+        resultContainer.innerHTML += `<div><em>Карта "${cardName}" не знайдена у базі даних.</em></div><hr>`;
+        continue;
+      }
+
+      const card = cardsData[cardName];
+
+      resultContainer.innerHTML += `
+        <div class="card-title">${titles[i]}: ${cardName}</div>
+        <div><strong>Позитивні аспекти:</strong> ${card.positive || '—'}</div>
+        <div><strong>Негативні аспекти:</strong> ${card.negative || '—'}</div>
+        <div><strong>Архетип:</strong> ${card.archetype || '—'}</div>
+        <div><strong>Акцентуація:</strong> ${card.accentuation || '—'}</div>
+        <div><strong>Інтерпретація:</strong> ${card.extended || '—'}</div>
+        <hr>
+      `;
+    }
+
+    // 🔔 Надсилаємо повідомлення в Telegram
+    sendToTelegram(cardKeys);
+
+  } catch (error) {
+    document.getElementById('resultContainer').innerHTML = `<p>Помилка: ${error.message}</p>`;
+  }
+}
+
+function sendToTelegram(cards) {
+  const botToken = "7743354943:AAHl6k5fpuTvEHkQlnwpv7tJFxZ94i994J4";
+  const chatId = "613056949";
+
+  let message = "🔮 Нова Піраміда Душі\n";
+  const titles = [
+    "🔺 Его",
+    "🔸 Свідомість (ліва)",
+    "🔸 Свідомість (права)",
+    "🔻 Підсвідомість (ліва)",
+    "🔻 Підсвідомість (центр)",
+    "🔻 Підсвідомість (права)"
+  ];
+
+  for (let i = 0; i < cards.length; i++) {
+    message += `${titles[i]}: ${cards[i]}\n`;
+  }
+
+  message += `🕒 Дата: ${new Date().toLocaleString('uk-UA')}`;
+
+  fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `chat_id=${chatId}&text=${encodeURIComponent(message)}`
+  }).then(res => {
+    if (res.ok) {
+      console.log("✅ Повідомлення надіслано в Telegram");
+    } else {
+      console.error("❌ Помилка надсилання в Telegram");
+    }
+  });
+}
+
+loadInterpretations();
+</script>
+</body>
+</html>
