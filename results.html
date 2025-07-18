@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Піраміда Душі — Інтерпретація</title>
   <style>
     body {
@@ -50,40 +50,29 @@
   <h1>🔮 Інтерпретація Піраміди Душі</h1>
 
   <div class="pyramid" id="pyramidInterpretation">
-    <!-- Карти будуть згенеровані тут -->
+    <!-- JS динамічно вставлятиме тут -->
   </div>
 
   <script type="module">
     import { deepInterpretations } from './interpretations_full.js';
 
-    // Зчитування карт з URL-параметрів
-    function getCardsFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      const cards = [];
-      for (let i = 1; i <= 6; i++) {
-        const card = params.get(`card${i}`);
-        cards.push(card || "пусто");
-      }
-      return cards;
-    }
-
-    const cards = getCardsFromURL();
+    const cards = JSON.parse(sessionStorage.getItem("soulPyramid")) || [];
 
     const positions = [
-      "1. Центр (Его)",
-      "2. Ліве минуле",
-      "3. Праве майбутнє",
-      "4. Тінь Его",
-      "5. Нижнє ліве (корені)",
-      "6. Нижнє праве (тенденції)"
+      "1. Вершина (Его)",
+      "2. Ліве минуле (Тінь)",
+      "3. Праве майбутнє (Ресурс часу)",
+      "4. Нижній лівий (Минуле психодинаміки)",
+      "5. Нижній центр (Теперішнє психодинаміки)",
+      "6. Нижній правий (Майбутнє психодинаміки)"
     ];
 
     const pyramid = document.getElementById("pyramidInterpretation");
 
     const layout = [
-      [0],       // перший ярус
-      [1, 2],    // другий ярус
-      [3, 4, 5]  // третій ярус
+      [0],       // 1-й ярус — вершина
+      [1, 2],    // 2-й ярус — тінь і ресурс
+      [3, 4, 5]  // 3-й ярус — психодинаміка: минуле, теперішнє, майбутнє
     ];
 
     layout.forEach(rowIndexes => {
@@ -98,7 +87,7 @@
         cardEl.className = "card";
 
         cardEl.innerHTML = `
-          <h2>${positions[i]} — ${cardName}</h2>
+          <h2>${positions[i]} — ${cardName || 'Немає карти'}</h2>
           <p><strong>Архетип:</strong> ${interp?.archetype || 'Немає даних'}</p>
           <p><strong>Тінь:</strong> ${interp?.shadow || 'Немає даних'}</p>
           <p><strong>Партнерство:</strong> ${interp?.partnerChoice || 'Немає даних'}</p>
@@ -112,6 +101,56 @@
 
       pyramid.appendChild(row);
     });
+
+    // Функція для генерації загального аналізу та висновку
+    function generateSummary(cards, deepInterpretations) {
+      if (!cards.length) return "Немає даних для аналізу.";
+
+      const apex = deepInterpretations[cards[0]] || {};
+      const middleLeft = deepInterpretations[cards[1]] || {};
+      const middleRight = deepInterpretations[cards[2]] || {};
+      const lowerLeft = deepInterpretations[cards[3]] || {};
+      const lowerCenter = deepInterpretations[cards[4]] || {};
+      const lowerRight = deepInterpretations[cards[5]] || {};
+
+      const apexRole = apex.archetype
+        ? `Вершина піраміди — архетип Его: ${apex.archetype}. Це головна роль у вашій психології.`
+        : "Вершина піраміди — архетип Его не визначено.";
+
+      const middleAspect = `Середній ярус показує баланс тіні та ресурсу часу:\n` +
+        `- Тінь: ${middleLeft.shadow || 'немає даних'}\n` +
+        `- Ресурс часу: ${middleRight.psychodynamic || 'немає даних'}`;
+
+      const lowerDynamics = `Нижній ярус розкриває психодинаміку:\n` +
+        `- Минуле: ${lowerLeft.psychodynamic || 'немає даних'}\n` +
+        `- Теперішнє: ${lowerCenter.psychodynamic || 'немає даних'}\n` +
+        `- Майбутнє: ${lowerRight.psychodynamic || 'немає даних'}`;
+
+      let conclusion = "Загальний висновок: рекомендується звернути увагу на інтеграцію тіньових аспектів і ресурсів часу, а також усвідомлення психодинамічних змін у минулому, теперішньому та майбутньому.";
+
+      // Приклад розширення висновку (можна доповнювати за бажанням)
+      if (apexRole.toLowerCase().includes("конфлікт")) {
+        conclusion += " Вершина піраміди свідчить про внутрішній конфлікт, який потребує уваги.";
+      }
+
+      return `${apexRole}\n\n${middleAspect}\n\n${lowerDynamics}\n\n${conclusion}`;
+    }
+
+    const summaryDiv = document.createElement("div");
+    summaryDiv.style = `
+      margin-top: 50px;
+      background: #1b1b1b;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px #444;
+      font-size: 16px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    `;
+
+    summaryDiv.innerHTML = `<h2 style="color: #ffdb70;">🔎 Загальний Аналіз Піраміди Душі</h2><p>${generateSummary(cards, deepInterpretations)}</p>`;
+
+    pyramid.appendChild(summaryDiv);
   </script>
 </body>
 </html>
