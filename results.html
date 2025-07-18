@@ -2,155 +2,164 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8" />
-  <title>Піраміда Душі — Інтерпретація</title>
+  <title>Піраміда Душі</title>
   <style>
     body {
       background: linear-gradient(to bottom, #111, #222);
       color: #f3eac2;
       font-family: Georgia, serif;
-      padding: 40px;
-    }
-    h1 {
       text-align: center;
-      font-size: 32px;
+      padding: 30px;
+    }
+    .cards {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
       margin-bottom: 40px;
     }
-    .pyramid {
+    .card {
+      width: 100px;
+      height: 160px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #444;
+      cursor: grab;
+      transition: transform 0.3s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .pyramid-template {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 30px;
+      gap: 15px;
     }
     .row {
       display: flex;
-      justify-content: center;
       gap: 20px;
+      justify-content: center;
     }
-    .card {
-      background: #1e1e1e;
-      border: 1px solid #555;
-      padding: 15px;
+    .slot {
+      width: 100px;
+      height: 160px;
+      border: 2px dashed #888;
       border-radius: 10px;
-      width: 260px;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    .slot.filled {
+      border: none;
+    }
+    button {
+      margin-top: 40px;
+      padding: 12px 24px;
+      font-size: 18px;
+      border-radius: 10px;
+      background: #f3eac2;
+      color: #111;
+      border: none;
+      cursor: pointer;
       box-shadow: 0 0 10px #333;
+      transition: background 0.3s;
     }
-    .card h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
-      color: #ffdb70;
-    }
-    .card p {
-      font-size: 14px;
-      line-height: 1.5;
-      margin: 5px 0;
+    button:hover {
+      background: #fff3c2;
     }
   </style>
 </head>
 <body>
-  <h1>🔮 Інтерпретація Піраміди Душі</h1>
+  <h1>🔺 Гра «Піраміда Душі»</h1>
+  <p>Перетягніть 6 Арканів у піраміду, що відображає вашу внутрішню структуру</p>
 
-  <div class="pyramid" id="pyramidInterpretation">
-    <!-- JS динамічно вставлятиме тут -->
+  <div class="cards" id="cardSelection"></div>
+
+  <h2>🔻 Ваша Піраміда</h2>
+  <div class="pyramid-template">
+    <div class="row">
+      <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+    <div class="row">
+      <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+      <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+    <div class="row">
+      <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+      <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+      <div class="slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
   </div>
 
-  <script type="module">
-    import { deepInterpretations } from './interpretations_full.js';
+  <button onclick="submitPyramid()">Отримати результат</button>
 
-    const cards = JSON.parse(sessionStorage.getItem("soulPyramid")) || [];
+  <script>
+    let draggedCard = null;
 
-    const positions = [
-      "1. Вершина (Его)",
-      "2. Ліве минуле (Тінь)",
-      "3. Праве майбутнє (Ресурс часу)",
-      "4. Нижній лівий (Минуле психодинаміки)",
-      "5. Нижній центр (Теперішнє психодинаміки)",
-      "6. Нижній правий (Майбутнє психодинаміки)"
-    ];
-
-    const pyramid = document.getElementById("pyramidInterpretation");
-
-    const layout = [
-      [0],       // 1-й ярус — вершина
-      [1, 2],    // 2-й ярус — тінь і ресурс
-      [3, 4, 5]  // 3-й ярус — психодинаміка: минуле, теперішнє, майбутнє
-    ];
-
-    layout.forEach(rowIndexes => {
-      const row = document.createElement("div");
-      row.className = "row";
-
-      rowIndexes.forEach(i => {
-        const cardName = cards[i];
-        const interp = deepInterpretations[cardName];
-
-        const cardEl = document.createElement("div");
-        cardEl.className = "card";
-
-        cardEl.innerHTML = `
-          <h2>${positions[i]} — ${cardName || 'Немає карти'}</h2>
-          <p><strong>Архетип:</strong> ${interp?.archetype || 'Немає даних'}</p>
-          <p><strong>Тінь:</strong> ${interp?.shadow || 'Немає даних'}</p>
-          <p><strong>Партнерство:</strong> ${interp?.partnerChoice || 'Немає даних'}</p>
-          <p><strong>Професія:</strong> ${interp?.professionChoice || 'Немає даних'}</p>
-          <p><strong>Репресія:</strong> ${interp?.repressionType || 'Немає даних'}</p>
-          <p><strong>Психодинаміка:</strong> ${interp?.psychodynamic || 'Немає даних'}</p>
-        `;
-
-        row.appendChild(cardEl);
-      });
-
-      pyramid.appendChild(row);
-    });
-
-    // Функція для генерації загального аналізу та висновку
-    function generateSummary(cards, deepInterpretations) {
-      if (!cards.length) return "Немає даних для аналізу.";
-
-      const apex = deepInterpretations[cards[0]] || {};
-      const middleLeft = deepInterpretations[cards[1]] || {};
-      const middleRight = deepInterpretations[cards[2]] || {};
-      const lowerLeft = deepInterpretations[cards[3]] || {};
-      const lowerCenter = deepInterpretations[cards[4]] || {};
-      const lowerRight = deepInterpretations[cards[5]] || {};
-
-      const apexRole = apex.archetype
-        ? `Вершина піраміди — архетип Его: ${apex.archetype}. Це головна роль у вашій психології.`
-        : "Вершина піраміди — архетип Его не визначено.";
-
-      const middleAspect = `Середній ярус показує баланс тіні та ресурсу часу:\n` +
-        `- Тінь: ${middleLeft.shadow || 'немає даних'}\n` +
-        `- Ресурс часу: ${middleRight.psychodynamic || 'немає даних'}`;
-
-      const lowerDynamics = `Нижній ярус розкриває психодинаміку:\n` +
-        `- Минуле: ${lowerLeft.psychodynamic || 'немає даних'}\n` +
-        `- Теперішнє: ${lowerCenter.psychodynamic || 'немає даних'}\n` +
-        `- Майбутнє: ${lowerRight.psychodynamic || 'немає даних'}`;
-
-      let conclusion = "Загальний висновок: рекомендується звернути увагу на інтеграцію тіньових аспектів і ресурсів часу, а також усвідомлення психодинамічних змін у минулому, теперішньому та майбутньому.";
-
-      // Приклад розширення висновку (можна доповнювати за бажанням)
-      if (apexRole.toLowerCase().includes("конфлікт")) {
-        conclusion += " Вершина піраміди свідчить про внутрішній конфлікт, який потребує уваги.";
-      }
-
-      return `${apexRole}\n\n${middleAspect}\n\n${lowerDynamics}\n\n${conclusion}`;
+    function allowDrop(event) {
+      event.preventDefault();
     }
 
-    const summaryDiv = document.createElement("div");
-    summaryDiv.style = `
-      margin-top: 50px;
-      background: #1b1b1b;
-      padding: 25px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px #444;
-      font-size: 16px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    `;
+    function drag(event) {
+      draggedCard = event.target;
+    }
 
-    summaryDiv.innerHTML = `<h2 style="color: #ffdb70;">🔎 Загальний Аналіз Піраміди Душі</h2><p>${generateSummary(cards, deepInterpretations)}</p>`;
+    function drop(event) {
+      event.preventDefault();
+      const target = event.target;
+      if (!draggedCard) return;
+      if (target.classList.contains('slot') && target.children.length === 0) {
+        const clone = draggedCard.cloneNode(true);
+        clone.setAttribute('draggable', 'false');
+        clone.style.cursor = 'default';
+        clone.style.position = 'static';
+        target.appendChild(clone);
+        target.classList.add("filled");
+        draggedCard.parentNode.removeChild(draggedCard);
+        draggedCard = null;
+      }
+    }
 
-    pyramid.appendChild(summaryDiv);
+    function submitPyramid() {
+      const slots = document.querySelectorAll('.slot');
+      const selectedCards = [];
+
+      slots.forEach(slot => {
+        if (slot.children.length > 0) {
+          selectedCards.push(slot.children[0].alt);
+        } else {
+          selectedCards.push("пусто");
+        }
+      });
+
+      sessionStorage.setItem("soulPyramid", JSON.stringify(selectedCards));
+      window.location.href = "results.html"; // <-- виправлено тут
+    }
+
+    window.onload = () => {
+      const cardData = [
+        { src: "img/durak.jpg", alt: "Дурень" },
+        { src: "img/mag.jpg", alt: "Маг" },
+        { src: "img/v.jrica.jpg", alt: "Верховна Жриця" },
+        { src: "img/imperatrica.jpg", alt: "Імператриця" },
+        { src: "img/imperator.jpg", alt: "Імператор" },
+        { src: "img/ierofant.jpg", alt: "Ієрофант" }
+      ];
+
+      for (let i = cardData.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cardData[i], cardData[j]] = [cardData[j], cardData[i]];
+      }
+
+      const container = document.getElementById("cardSelection");
+      cardData.forEach(data => {
+        const img = document.createElement("img");
+        img.className = "card";
+        img.src = data.src;
+        img.alt = data.alt;
+        img.setAttribute("draggable", "true");
+        img.setAttribute("ondragstart", "drag(event)");
+        container.appendChild(img);
+      });
+    };
   </script>
 </body>
 </html>
