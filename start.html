@@ -1,7 +1,8 @@
+<!-- start.html -->
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Піраміда Душі</title>
   <style>
     body {
@@ -11,7 +12,6 @@
       text-align: center;
       padding: 30px;
     }
-
     .cards {
       display: flex;
       justify-content: center;
@@ -19,7 +19,6 @@
       gap: 15px;
       margin-bottom: 40px;
     }
-
     .card {
       width: 100px;
       height: 160px;
@@ -28,24 +27,20 @@
       cursor: grab;
       transition: transform 0.3s;
     }
-
     .card:hover {
       transform: scale(1.05);
     }
-
     .pyramid-template {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 15px;
     }
-
     .row {
       display: flex;
       gap: 20px;
       justify-content: center;
     }
-
     .slot {
       width: 100px;
       height: 160px;
@@ -53,11 +48,9 @@
       border-radius: 10px;
       background-color: rgba(255, 255, 255, 0.05);
     }
-
     .slot.filled {
       border: none;
     }
-
     button {
       margin-top: 40px;
       padding: 12px 24px;
@@ -70,7 +63,6 @@
       box-shadow: 0 0 10px #333;
       transition: background 0.3s;
     }
-
     button:hover {
       background: #fff3c2;
     }
@@ -80,14 +72,7 @@
   <h1>🔺 Гра «Піраміда Душі»</h1>
   <p>Перетягніть 6 Арканів у піраміду, що відображає вашу внутрішню структуру</p>
 
-  <div class="cards" id="cardSelection">
-    <img class="card" src="img/durak.jpg" alt="Дурак" draggable="true" ondragstart="drag(event)">
-    <img class="card" src="img/mag.jpg" alt="Маг" draggable="true" ondragstart="drag(event)">
-    <img class="card" src="img/v.jrica.jpg" alt="Верховна Жриця" draggable="true" ondragstart="drag(event)">
-    <img class="card" src="img/imperatrica.jpg" alt="Імператриця" draggable="true" ondragstart="drag(event)">
-    <img class="card" src="img/imperator.jpg" alt="Імператор" draggable="true" ondragstart="drag(event)">
-    <img class="card" src="img/ierofant.jpg" alt="Ієрофант" draggable="true" ondragstart="drag(event)">
-  </div>
+  <div class="cards" id="cardSelection"></div>
 
   <h2>🔻 Ваша Піраміда</h2>
   <div class="pyramid-template">
@@ -121,16 +106,14 @@
     function drop(event) {
       event.preventDefault();
       const target = event.target;
-
       if (!draggedCard) return;
-
       if (target.classList.contains('slot') && target.children.length === 0) {
         const clone = draggedCard.cloneNode(true);
         clone.setAttribute('draggable', 'false');
         clone.style.cursor = 'default';
+        clone.style.position = 'static';
         target.appendChild(clone);
         target.classList.add("filled");
-
         draggedCard.parentNode.removeChild(draggedCard);
         draggedCard = null;
       }
@@ -148,9 +131,36 @@
         }
       });
 
-      const query = selectedCards.map((card, index) => `card${index + 1}=${encodeURIComponent(card)}`).join('&');
-      window.location.href = `results.html?${query}`;
+      sessionStorage.setItem("soulPyramid", JSON.stringify(selectedCards));
+      window.location.href = "waiting.html";
     }
+
+    window.onload = () => {
+      const cardData = [
+        { src: "img/durak.jpg", alt: "Дурень" },
+        { src: "img/mag.jpg", alt: "Маг" },
+        { src: "img/v.jrica.jpg", alt: "Верховна Жриця" },
+        { src: "img/imperatrica.jpg", alt: "Імператриця" },
+        { src: "img/imperator.jpg", alt: "Імператор" },
+        { src: "img/ierofant.jpg", alt: "Ієрофант" }
+      ];
+
+      for (let i = cardData.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cardData[i], cardData[j]] = [cardData[j], cardData[i]];
+      }
+
+      const container = document.getElementById("cardSelection");
+      cardData.forEach(data => {
+        const img = document.createElement("img");
+        img.className = "card";
+        img.src = data.src;
+        img.alt = data.alt;
+        img.setAttribute("draggable", "true");
+        img.setAttribute("ondragstart", "drag(event)");
+        container.appendChild(img);
+      });
+    };
   </script>
 </body>
 </html>
