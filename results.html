@@ -50,13 +50,24 @@
   <h1>🔮 Інтерпретація Піраміди Душі</h1>
 
   <div class="pyramid" id="pyramidInterpretation">
-    <!-- JS буде динамічно вставляти тут -->
+    <!-- Карти будуть згенеровані тут -->
   </div>
 
   <script type="module">
     import { deepInterpretations } from './interpretations_full.js';
 
-    const cards = JSON.parse(sessionStorage.getItem("soulPyramid")) || [];
+    // Зчитування карт з URL-параметрів
+    function getCardsFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const cards = [];
+      for (let i = 1; i <= 6; i++) {
+        const card = params.get(`card${i}`);
+        cards.push(card || "пусто");
+      }
+      return cards;
+    }
+
+    const cards = getCardsFromURL();
 
     const positions = [
       "1. Центр (Его)",
